@@ -13,3 +13,11 @@ body {
 #message-form .btn-primary {
   min-width: 150px;
 }
+
+#messages {
+  margin-top: 20px;
+}
+
+#messages .box + .box {
+  margin-top: 20px;
+}

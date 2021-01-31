@@ -15,7 +15,7 @@
   <body>
     <div class="container">
       <h1>Titter</h1>
-      <div class="row">
+      <div class="row form">
         <div class="col-12 box">
           <div class="box__body">
             <form id="message-form">
@@ -36,11 +36,16 @@
                   id="message"
                 ></textarea>
               </div>
+              <div class="form-group">
+                <label for="message" class="form-label">Tags</label>
+                <input type="text" class="form-control" name="tags" id="tags" />
+              </div>
               <button type="submit" class="btn btn-primary">Send</button>
             </form>
           </div>
         </div>
       </div>
+      <div class="row" id="messages"></div>
     </div>
 
     <script
@@ -53,5 +58,53 @@
       integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx"
       crossorigin="anonymous"
     ></script>
+
+    <script>
+      let addItem = (listElement) => {
+        return function (title, content, ...tags) {
+          let $message = document.createElement("div");
+          $message.classList.add("box");
+          $message.classList.add("col-12");
+
+          $message.innerHTML = `
+          <h3>${title}</h3>
+          <p>${content}</p>
+          `;
+
+          tags.map((item) => {
+            let $tag = document.createElement("span");
+            $tag.className = "badge badge-secondary";
+            $tag.innerHTML = item;
+
+            $message.append($tag);
+          });
+
+          listElement.prepend($message);
+        };
+      };
+
+      const messageForm = document.getElementById("message-form");
+      const messagesDiv = document.getElementById("messages");
+
+      let addMessage = addItem(messagesDiv);
+
+      messageForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        const _author = messageForm.querySelector("[name=author]").value;
+        const _message = messageForm.querySelector("[name=message]").value;
+
+        if(_author === '' || _message === '') {
+          alert('Заполнены не все поля!');
+          return;
+        }
+
+        const _tagsInput = messageForm.querySelector("[name=tags]").value;
+
+        let tags = _tagsInput.split(" ");
+
+        addMessage(_author, _message, ...tags);
+      });
+    </script>
   </body>
 </html>
