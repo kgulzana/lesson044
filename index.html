@@ -45,6 +45,9 @@
           </div>
         </div>
       </div>
+      <div class="app-actions">
+        <button id="start-filter" class="btn btn-danger">Spam Filter!</button>
+      </div>
       <div class="row" id="messages"></div>
     </div>
 
@@ -60,8 +63,34 @@
     ></script>
 
     <script>
+      // if (localStorage.getItem('messages' == null)) {
+      //   let messages = [];
+      // } else {
+      //   let messages = localStorage.getItem('messages');
+      // }
+
+      let messages = JSON.parse(localStorage.getItem("messages")) || [];
+
+      // функция форматирования даты в формат dd.mm.YYYY
+
+      let formatDate = (date) => {
+        let leadZero = (num) => (num < 10 ? "0" + num : String(num));
+        // if (num < 10) {
+        //   return 0 + num;
+        // } else {
+        //   return String(num);
+        // }
+        return `${leadZero(date.getDate())}.${leadZero(
+          date.getMonth() + 1
+        )}.${date.getFullYear()}`;
+      };
+
+      // замыкание для добавления элемента в список
+      // принимает HTMLElement, в которой будет добавляться эдемент
+
       let addItem = (listElement) => {
-        return function (title, content, ...tags) {
+        // функция для добавления
+        return function (title, content, date, ...tags) {
           let $message = document.createElement("div");
           $message.classList.add("box");
           $message.classList.add("col-12");
@@ -69,6 +98,7 @@
           $message.innerHTML = `
           <h3>${title}</h3>
           <p>${content}</p>
+          <span class="message__date">${formatDate(date)}</span>
           `;
 
           tags.map((item) => {
@@ -83,10 +113,31 @@
         };
       };
 
+      //функция для создания обьекта сообщения
+
+      const creatMessage = (author, message, date, ...tags) => {
+        return {
+          author,
+          message,
+          date,
+          tags,
+        };
+      };
+
+      const renderMessages = (messages) => {
+        messagesDiv.innerHTML = "";
+        messages.map((item) => {
+          let { author, message: __message, date, tags } = item;
+          addMessage(author, __message, new Date(date), tags);
+        });
+      };
+
       const messageForm = document.getElementById("message-form");
       const messagesDiv = document.getElementById("messages");
 
       let addMessage = addItem(messagesDiv);
+
+      renderMessages(messages);
 
       messageForm.addEventListener("submit", (event) => {
         event.preventDefault();
@@ -94,8 +145,8 @@
         const _author = messageForm.querySelector("[name=author]").value;
         const _message = messageForm.querySelector("[name=message]").value;
 
-        if(_author === '' || _message === '') {
-          alert('Заполнены не все поля!');
+        if (_author === "" || _message === "") {
+          alert("Заполнены не все поля!");
           return;
         }
 
@@ -103,7 +154,32 @@
 
         let tags = _tagsInput.split(" ");
 
-        addMessage(_author, _message, ...tags);
+        let _now = new Date();
+        let newMessage = creatMessage(_author, _message, _now, ...tags);
+        messages.push(newMessage);
+
+        localStorage.setItem("messages", JSON.stringify(messages));
+
+        renderMessages(messages);
+
+        messageForm.reset();
+      });
+
+      document.querySelector("#start-filter").addEventListener("click", () => {
+        messages = messages.filter((item) => {
+          let _tags = item.tags;
+
+          let spamTagsCount = _tags.reduce((acc, tag) => {
+            if (tag == "spam" || tag == "js" || tag == "mat") acc++;
+            return acc;
+          }, 0);
+
+          return spamTagsCount == 0;
+        });
+
+        localStorage.setItem("messages", JSON.stringify(messages));
+
+        renderMessages(messages);
       });
     </script>
   </body>
